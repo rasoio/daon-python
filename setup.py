@@ -8,6 +8,6 @@ setup(name='daon',
       author='rasoio',
       author_email='rasoio@naver.com',
       license='MIT',
-      install_require=['py4j'],
+      install_requires=['py4j'],
       packages=find_packages(exclude=['contrib', 'docs', 'tests']),
       zip_safe=False)
