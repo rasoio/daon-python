@@ -1,20 +1,12 @@
 import os
-import time
+import sys, traceback
 import atexit
 
-from py4j.java_gateway import (JavaGateway, launch_gateway, GatewayParameters)
+from py4j.java_gateway import (JavaGateway, launch_gateway, GatewayParameters, Py4JNetworkError)
 
 install_path = os.path.dirname(os.path.realpath(__file__))
 
 gateway = None
-
-
-class JvmError(Exception):
-  def __init__(self, value):
-    self.value = value
-
-  def __str__(self):
-    return repr(self.value)
 
 
 def shutdown_jvm():
@@ -28,37 +20,44 @@ def init_jvm():
   global gateway
 
   """Initializes the Java virtual machine (JVM).
+  wrong.. still valid check first
+  if fail and not running then recreate
+  else reuse it
   """
   if gateway != None:
-    return
+    if check_valid():
+      return
+    else:
+      shutdown_jvm()
 
-  folder_suffix = [
-    u'{0}{1}daonCore.jar'
-  ]
+  port = launch()
 
-  javadir = u'%s%sjava' % (install_path, os.sep)
-  args = [javadir, os.sep]
-  classpath = os.pathsep.join(f.format(*args) for f in folder_suffix)
-
-  port = launch_gateway(classpath=classpath, javaopts=['-Dfile.encoding=UTF8', '-ea', '-Xmx768m'])
-
-  time.sleep(1)
-  jvm_e = None
-  for i in range(0, 10):
-    try:
-      time.sleep(1)
-      gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port))
-    except Exception as e:
-      gateway = None
-      jvm_e = e
-      continue
-    break
-  if gateway is None:
-    if jvm_e:
-      raise jvm_e
-    raise JvmError("Could not connect to JVM. unknown error")
+  gateway = JavaGateway(gateway_parameters=GatewayParameters(port=port))
 
   atexit.register(shutdown_jvm)
+
+
+def check_valid():
+  global gateway
+
+  try:
+    gateway.jvm.System.getProperty("java.runtime.name")
+    return True
+  except Py4JNetworkError:
+    print("No JVM listening")
+    traceback.print_exc(file=sys.stderr)
+    return False
+  except Exception:
+    print("Another type of problem... maybe with the JVM")
+    traceback.print_exc(file=sys.stderr)
+    return False
+
+
+def launch():
+  lib_dir = u'%s%sjava%sdaonCore.jar' % (install_path, os.sep, os.sep)
+  classpath = os.pathsep.join([lib_dir])
+  port = launch_gateway(classpath=classpath, javaopts=['-Dfile.encoding=UTF8', '-ea', '-Xmx768m'])
+  return port
 
 
 def get_jvm():

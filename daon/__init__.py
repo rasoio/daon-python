@@ -1,8 +1,8 @@
 __title__ = 'Daon'
-__version__ = '0.1'
+__version__ = '0.1.3'
 __author__ = 'rasoio'
 __license__ = 'GPL v3'
-__copyright__ = 'Copyright 2015 Rasoio'
+__copyright__ = 'Copyright 2017 Rasoio'
 
 
 from .jvm import init_jvm
