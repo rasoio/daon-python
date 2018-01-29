@@ -44,8 +44,8 @@ def check_valid():
     gateway.jvm.System.getProperty("java.runtime.name")
     return True
   except Py4JNetworkError:
-    print("No JVM listening")
-    traceback.print_exc(file=sys.stderr)
+    print("No JVM listening. restart gateway...")
+    # traceback.print_exc(file=sys.stderr)
     return False
   except Exception:
     print("Another type of problem... maybe with the JVM")
