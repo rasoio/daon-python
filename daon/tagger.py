@@ -5,15 +5,23 @@ from . import jvm
 
 
 class Tagger:
-  def pos(self, sentence, include=[], exclude=[]):
+
+  def parse(self, result):
+    result = result.split()
+
+    results = [tuple(m.rsplit('/',1)) for m in result]
+
+    return results
+
+  def pos(self, sentence, includeBit=-1, excludeBit=-1):
     """POS tagger.
-    :param include: [], include tags.
-    :param exclude: [], exclude tags.
+    :param include: long, include bit.
+    :param exclude: long, exclude bit.
     """
 
-    result = self.daon.morphemes(sentence, ','.join(include), ','.join(exclude))
+    result = self.daon.morphemes(sentence, includeBit, excludeBit)
 
-    morphemes = [(result.get(k).getWord(), result.get(k).getTag()) for k in range(result.size())]
+    morphemes = self.parse(result)
 
     return morphemes
 
@@ -22,15 +30,29 @@ class Tagger:
 
     return [s for s, t in self.pos(sentence)]
 
-  def nouns(self, sentence, include=['N','SL','SH'], exclude=[]):
+  def nouns(self, sentence, includeBit=None, excludeBit=-1):
     """Noun extractor."""
 
-    return [s for s, t in self.pos(sentence, include=include, exclude=exclude)]
+    if includeBit is None:
+      includeBit = self.defaultNounBit
+
+    return [s for s, t in self.pos(sentence, includeBit=includeBit, excludeBit=excludeBit)]
+
+  def makeTagBit(self, tags):
+
+    l = jvm.get_jvm().java.util.ArrayList()
+
+    for tag in tags:
+      l.append(tag)
+
+    return jvm.get_jvm().daon.core.util.Utils.makeTagBit(l)
 
   def __init__(self, model_path=None, url=None, timeout=30000):
     jvm.init_jvm()
 
     self.daon = jvm.get_jvm().daon.core.Daon()
+
+    self.defaultNounBit = self.makeTagBit(['N','SL','SH'])
 
     if model_path:
       model = jvm.get_jvm().daon.core.util.ModelUtils.loadModelByFile(model_path)

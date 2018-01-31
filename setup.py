@@ -1,7 +1,8 @@
 from setuptools import setup, find_packages
+from daon import __version__
 
 setup(name='daon',
-      version='0.1.6',
+      version=__version__,
       install_requires=['py4j'],
       description='Daon Korean Analyzer',
       url='http://github.com/rasoio/daon-python',
