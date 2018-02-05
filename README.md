@@ -20,3 +20,9 @@ tagger = Tagger(model_path='/Users/mac/work/daon/daon-core/src/main/resources/da
 # 새로운 모델 적용 (모델 url)
 tagger = Tagger(url='http://localhost:5001/v1/model/download?seq=1514366867073')
 ```
+
+### 참고
+
+[konlpy](https://github.com/konlpy/konlpy)
+
+[konlpy py4j](https://github.com/nazgul33/konlpy)
